@@ -3,6 +3,7 @@
   
   var touchX, touchY, movX, movY, go;
   var goUpDown;
+  var nowX, nowY;
   
   // Note:
   // 1. The touchend event is not trigged on some android stock browsers before 4.1 Jelly Bean.
@@ -70,6 +71,39 @@
   document.addEventListener("touchend", stop, true);
   document.addEventListener("touchleave", stop, true);
   document.addEventListener("touchcancel", stop, true);
+  
+  if (window.navigator.msPointerEnabled) {
+    $(document).on("MSPointerDown", pointerDown);
+    $(document).on("MSPointerMove", pointerMove);
+    $(document).on("MSPointerUp", pointerUp);
+    $(document).on("MSPointerCancel", pointerCancel);
+  }
+  
+  function pointerDown(event) {
+    console.info('pointer down', event.clientX, event.clientY);
+    touchX = event.clientX;
+    touchY = event.clientY;
+  }
+  function pointerMove(event) {
+    console.info('pointerMove', event.clientX, event.clientY);
+    nowX = event.clientX;
+    nowY = event.clientY;
+  }
+  function pointerUp(event) {
+    console.info('pointerUp', event.clientX, event.clientY);
+    movX = Math.abs(touchX - nowX);
+    movY = Math.abs(touchY - nowY);
+    var el = $(document);
+    if (movX > 10 || movY > 10) {
+      el.trigger("swipe");
+      el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)));
+      //console.error("ie direction", swipeDirection(touchX, nowX, touchY, nowY));
+    }
+  }
+  function pointerCancel(event) {
+    //console.info('pointerCancel', event.clientX, event.clientY);
+    pointerUp(event);
+  }
   
   ['swipe', 'swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown'].forEach(function(eventName){
     $.fn[eventName] = function(callback){
