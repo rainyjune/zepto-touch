@@ -1,4 +1,15 @@
-(function($){
+(function(factory){
+  if (typeof define !== "undefined" && define.cmd) {
+    define(function(require, exports, module){
+      
+      var $ = require('zepto');
+      factory($);
+    });
+  } else {
+    var $ = Zepto;
+    factory($);
+  }
+}(function($){
   console.log($.fn);
   
   var touchX, touchY, movX, movY, go;
@@ -9,6 +20,10 @@
   // 1. The touchend event is not trigged on some android stock browsers before 4.1 Jelly Bean.
   //      See: https://code.google.com/p/android/issues/detail?id=19827
   // 2. The solution: http://stackoverflow.com/a/23145727
+  
+  
+  // Resources
+  // 1. Pointer and gesture events in Internet Explorer 10 (http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx)
   
   function swipeDirection(x1, x2, y1, y2) {
     return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? (x1 - x2 > 0 ? 'Left' : 'Right') : (y1 - y2 > 0 ? 'Up' : 'Down');
@@ -32,7 +47,7 @@
     movX = nowX - touchX;
     movY = nowY - touchY;
     // TODO
-    var el =   $(document) || $(e.touches[0]);
+    var el = $(e.target) || $(document);
     if(!go) {
       var absMovX = Math.abs(movX),
           absMoveY = Math.abs(movY);
@@ -41,16 +56,16 @@
         go = true;
         
         //debugger;
-        el.trigger("swipe");
-        el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)));
+        el.trigger("swipeMy");
+        el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
         //console.log("direction 1", swipeDirection(touchX, nowX, touchY, nowY), e);
       } else {
         // Swipe Up or Swipe Down
         stop(e);
         if (!goUpDown) {
           goUpDown = true;
-          el.trigger("swipe");
-          el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)));
+          el.trigger("swipeMy");
+          el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
           //console.log("direction 2", swipeDirection(touchX, nowX, touchY, nowY), e);
         }
         
@@ -66,11 +81,11 @@
     document.removeEventListener("touchmove", prevent, false);
   }
   
-  document.addEventListener("touchstart", start, true);
-  document.addEventListener("touchmove", move, true);
-  document.addEventListener("touchend", stop, true);
-  document.addEventListener("touchleave", stop, true);
-  document.addEventListener("touchcancel", stop, true);
+  $(document).on("touchstart", start);
+  $(document).on("touchmove", move);
+  $(document).on("touchend", stop);
+  $(document).on("touchleave", stop);
+  $(document).on("touchcancel", stop);
   
   if (window.navigator.msPointerEnabled) {
     $(document).on("MSPointerDown", pointerDown);
@@ -93,10 +108,10 @@
     console.info('pointerUp', event.clientX, event.clientY);
     movX = Math.abs(touchX - nowX);
     movY = Math.abs(touchY - nowY);
-    var el = $(document);
+    var el = $(event.target) || $(document);
     if (movX > 10 || movY > 10) {
-      el.trigger("swipe");
-      el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)));
+      el.trigger("swipeMy");
+      el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
       //console.error("ie direction", swipeDirection(touchX, nowX, touchY, nowY));
     }
   }
@@ -105,10 +120,10 @@
     pointerUp(event);
   }
   
-  ['swipe', 'swipeLeft', 'swipeRight', 'swipeUp', 'swipeDown'].forEach(function(eventName){
+  ['swipeMy', 'swipeLeftMy', 'swipeRightMy', 'swipeUpMy', 'swipeDownMy'].forEach(function(eventName){
     $.fn[eventName] = function(callback){
       return this.on(eventName, callback);
     };
   });
   
-})(Zepto);
+}));
