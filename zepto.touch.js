@@ -1,3 +1,8 @@
+/***
+ * Zepto swipe module.
+ * @author rainyjune <rainyjune@live.cn>
+ * Known issue: swipe down and swipe up works not good enough on Android 4.1- devices.
+ */
 (function(factory){
   if (typeof define !== "undefined" && define.cmd) {
     define(function(require, exports, module){
@@ -10,11 +15,13 @@
     factory($);
   }
 }(function($){
-  console.log($.fn);
   
-  var touchX, touchY, movX, movY, go;
+  var touchX, touchY, movX, movY, goLeftRight;
   var goUpDown;
   var nowX, nowY;
+  
+  var horizontalOffset = 20,
+      verticalOffset = 30;
   
   // Note:
   // 1. The touchend event is not trigged on some android stock browsers before 4.1 Jelly Bean.
@@ -25,73 +32,56 @@
   // Resources
   // 1. Pointer and gesture events in Internet Explorer 10 (http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx)
   
-  function swipeDirection(x1, x2, y1, y2) {
-    return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? (x1 - x2 > 0 ? 'Left' : 'Right') : (y1 - y2 > 0 ? 'Up' : 'Down');
-  }
-  
-  function prevent(e){
-    e.preventDefault();
-  }
-  
-  function start(e) {
-    go = false;
-    goUpDown = false;
-    document.addEventListener("touchmove", prevent, false);
-    touchX = e.touches[0].pageX;
-    touchY = e.touches[0].pageY;
-  }
-  
-  function move(e) {
-    var nowX = e.touches[0].pageX,
-        nowY = e.touches[0].pageY;
-    movX = nowX - touchX;
-    movY = nowY - touchY;
-    // TODO
-    var el = $(e.target) || $(document);
-    if(!go) {
-      var absMovX = Math.abs(movX),
-          absMoveY = Math.abs(movY);
-      if(absMoveY < absMovX) {
-        // Swipe Left or Swipe Right
-        go = true;
-        
-        //debugger;
-        el.trigger("swipeMy");
-        el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
-        //console.log("direction 1", swipeDirection(touchX, nowX, touchY, nowY), e);
-      } else {
-        // Swipe Up or Swipe Down
-        stop(e);
-        if (!goUpDown) {
-          goUpDown = true;
-          el.trigger("swipeMy");
-          el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
-          //console.log("direction 2", swipeDirection(touchX, nowX, touchY, nowY), e);
-        }
-        
-      }
-    } else {
-      /* *************** */
-      // cast your spell
-      /* *************** */
-    }
-  }
-  
-  function stop(e) {
-    document.removeEventListener("touchmove", prevent, false);
-  }
-  
-  $(document).on("touchstart", start);
-  $(document).on("touchmove", move);
-  $(document).on("touchend", stop);
-  $(document).on("touchleave", stop);
-  $(document).on("touchcancel", stop);
-  
-  if (window.navigator.msPointerEnabled) {
+  if (isAndroidBrowser() && getAndroidVersion() < 4.1) {
+    //alert("4.1--");
+    $(document).on("touchstart", start);
+    $(document).on("touchmove", move);
+    $(document).on("touchend", stop);
+    $(document).on("touchleave", stop);
+    $(document).on("touchcancel", stop);
+  } else if (window.navigator.msPointerEnabled) {
+    //alert("windows");
     $(document).on("MSPointerDown", pointerDown);
     $(document).on("MSPointerMove", pointerMove);
     $(document).on("MSPointerUp", pointerUp);
     $(document).on("MSPointerCancel", pointerCancel);
+  } else {
+    //alert("normal");
+    $(document).on("touchstart", touchstartHandler);
+    $(document).on("touchmove", touchmoveHandler);
+    $(document).on("touchend", touchendHandler);
+    $(document).on("touchleave touchcancel", touchendHandler);
+  }
+  
+  function touchstartHandler(event) {
+    //debugger;
+    /*
+    touchX = event.touches[0].pageX;
+    touchY = event.touches[0].pageY;
+    */
+    touchX = event.touches[0].clientX;
+    touchY = event.touches[0].clientY;
+  }
+  
+  function touchmoveHandler(event) {
+    /*
+    nowX = event.touches[0].pageX,
+    nowY = event.touches[0].pageY;
+    */
+    nowX = event.touches[0].clientX,
+    nowY = event.touches[0].clientY;
+  }
+  
+  function touchendHandler(event) {
+    movX = Math.abs(touchX - nowX);
+    movY = Math.abs(touchY - nowY);
+    var el = $(event.target) || $(document);
+    if (movX > horizontalOffset || movY > verticalOffset) {
+      el.trigger("swipeMy");
+      //alert("Movex:" + movX + " movey: " + movY);
+      el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
+      //console.error("ie direction", swipeDirection(touchX, nowX, touchY, nowY));
+    }
   }
   
   function pointerDown(event) {
@@ -109,7 +99,7 @@
     movX = Math.abs(touchX - nowX);
     movY = Math.abs(touchY - nowY);
     var el = $(event.target) || $(document);
-    if (movX > 10 || movY > 10) {
+    if (movX > horizontalOffset || movY > verticalOffset) {
       el.trigger("swipeMy");
       el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
       //console.error("ie direction", swipeDirection(touchX, nowX, touchY, nowY));
@@ -118,6 +108,90 @@
   function pointerCancel(event) {
     //console.info('pointerCancel', event.clientX, event.clientY);
     pointerUp(event);
+  }
+  
+  function isAndroidBrowser() {
+    var ua = navigator.userAgent;
+    return (ua.indexOf("Android") >= 0) || (ua.indexOf("android") >= 0);
+  }
+  
+  /**
+   * Get 2 digit version of Android
+   */
+  function getAndroidVersion() {
+    var ua = navigator.userAgent;
+    return parseFloat(ua.slice(ua.indexOf("Android")+8));
+  }
+
+  function swipeDirection(x1, x2, y1, y2) {
+    return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? (x1 - x2 > 0 ? 'Left' : 'Right') : (y1 - y2 > 0 ? 'Up' : 'Down');
+  }
+  
+  function prevent(e){
+    e.preventDefault();
+  }
+  
+  function start(e) {
+    goLeftRight = false;
+    goUpDown = false;
+    document.addEventListener("touchmove", prevent, false);
+    /*
+    touchX = e.touches[0].pageX;
+    touchY = e.touches[0].pageY;
+    */
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }
+  
+  function move(e) {
+    /*
+    var nowX = e.touches[0].pageX,
+        nowY = e.touches[0].pageY;
+    */
+    var nowX = e.touches[0].clientX,
+        nowY = e.touches[0].clientY;
+    movX = nowX - touchX;
+    movY = nowY - touchY;
+    // TODO
+    var el = $(e.target) || $(document);
+    if(!goLeftRight) {
+      var absMovX = Math.abs(movX),
+          absMoveY = Math.abs(movY);
+      if(absMoveY < absMovX) {
+        //alert("MOVEX: " + absMovX + " MOVEY: " + absMoveY);
+        // Swipe Left or Swipe Right
+        if (absMovX < horizontalOffset) {
+          return ;
+        }
+        goLeftRight = true;
+        
+        //debugger;
+        el.trigger("swipeMy");
+        el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
+        //console.log("direction 1", swipeDirection(touchX, nowX, touchY, nowY), e);
+      } else {
+        // Swipe Up or Swipe Down
+        stop(e);
+        if (!goUpDown) {
+          if (absMoveY < verticalOffset) {
+            return ;
+          }
+          goUpDown = true;
+          el.trigger("swipeMy");
+          el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
+          //console.log("direction 2", swipeDirection(touchX, nowX, touchY, nowY), e);
+        }
+        
+      }
+    } else {
+      /* *************** */
+      // cast your spell
+      /* *************** */
+    }
+  }
+  
+  function stop(e) {
+    document.removeEventListener("touchmove", prevent, false);
   }
   
   ['swipeMy', 'swipeLeftMy', 'swipeRightMy', 'swipeUpMy', 'swipeDownMy'].forEach(function(eventName){

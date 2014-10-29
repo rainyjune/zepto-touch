@@ -77,27 +77,34 @@
     <p>Text2</p>
     <p>Text2</p>
     <p>Text2</p>
-    <script src="http://10.207.26.137:9090/target/target-script-min.js#anonymous"></script>
+    <!--<script src="http://10.207.26.137:9090/target/target-script-min.js#anonymous"></script>-->
     
     <script src="zepto.js"></script>
     <script src="zepto.touch.js"></script>
     <script>
       $(function(){
-        $(document).on("swipeLeft", function(e){
-           console.log("swipeLeft", e);
+        //alert("fff");
+        $(document).on("swipeLeftMy", function(e){
+          console.log("swipeLeft", e);
+          alert("swipeLeft");
         });
-        $(document).on("swipeRight", function(e){
+        $(document).on("swipeRightMy", function(e){
           //alert("sss");
            console.log("swipeRight", e);
+          alert("swipeRight");
         })
-        $(document).on("swipeUp", function(e){
+        
+        $(document).on("swipeUpMy", function(e){
           //alert("sss");
-           console.log("swipeUp", e);
+           console.log("swipeUpMy", e);
+          alert("swipeUpMy");
         })
-        $(document).on("swipeDown", function(e){
+        $(document).on("swipeDownMy", function(e){
           //alert("sss");
            console.log("swipeDown", e);
+          alert("swipeDown");
         })
+        
       });
     </script>
   </body>
