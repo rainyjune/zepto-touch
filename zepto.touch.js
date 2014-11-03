@@ -18,7 +18,7 @@
   
   var touchX, touchY, movX, movY, goLeftRight;
   var goUpDown;
-  var nowX, nowY;
+  var nowX = null, nowY = null;
   
   var horizontalOffset = 20,
       verticalOffset = 30;
@@ -54,6 +54,7 @@
   }
   
   function touchstartHandler(event) {
+    initAllVar();
     //debugger;
     /*
     touchX = event.touches[0].pageX;
@@ -73,6 +74,9 @@
   }
   
   function touchendHandler(event) {
+    if (nowX === null || nowY === null) {
+      return ;
+    }
     movX = Math.abs(touchX - nowX);
     movY = Math.abs(touchY - nowY);
     var el = $(event.target) || $(document);
@@ -85,6 +89,7 @@
   }
   
   function pointerDown(event) {
+    initAllVar();
     console.info('pointer down', event.clientX, event.clientY);
     touchX = event.clientX;
     touchY = event.clientY;
@@ -95,6 +100,9 @@
     nowY = event.clientY;
   }
   function pointerUp(event) {
+    if (nowX === null || nowY === null) {
+      return ;
+    }
     console.info('pointerUp', event.clientX, event.clientY);
     movX = Math.abs(touchX - nowX);
     movY = Math.abs(touchY - nowY);
@@ -132,6 +140,7 @@
   }
   
   function start(e) {
+    initAllVar();
     goLeftRight = false;
     goUpDown = false;
     document.addEventListener("touchmove", prevent, false);
@@ -192,6 +201,18 @@
   
   function stop(e) {
     document.removeEventListener("touchmove", prevent, false);
+  }
+  
+  function initAllVar() {
+    //return ;
+    touchX = 0,
+    touchY = 0,
+    movX = 0,
+    movY = 0,
+    goLeftRight = false;
+    goUpDown = false;
+    nowX = null,
+    nowY = null;
   }
   
   ['swipeMy', 'swipeLeftMy', 'swipeRightMy', 'swipeUpMy', 'swipeDownMy'].forEach(function(eventName){
