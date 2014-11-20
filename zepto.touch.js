@@ -45,12 +45,26 @@
     $(document).on("MSPointerMove", pointerMove);
     $(document).on("MSPointerUp", pointerUp);
     $(document).on("MSPointerCancel", pointerCancel);
-  } else {
-    //alert("normal");
+  } else if (('ontouchstart' in document.documentElement) || ('ontouchstart' in window)){
     $(document).on("touchstart", touchstartHandler);
     $(document).on("touchmove", touchmoveHandler);
     $(document).on("touchend", touchendHandler);
     $(document).on("touchleave touchcancel", touchendHandler);
+  } else {
+    $(document).on("mousedown", mousestartHandler);
+    $(document).on("mousemove", mousemoveHandler);
+    $(document).on("mouseup", touchendHandler);
+  }
+  
+  function mousestartHandler(event) {
+    initAllVar();
+    touchX = event.clientX;
+    touchY = event.clientY;
+  }
+  
+  function mousemoveHandler(event) {
+    nowX = event.clientX,
+    nowY = event.clientY;
   }
   
   function touchstartHandler(event) {
