@@ -1,7 +1,8 @@
 /***
  * Zepto swipe module.
  * @author rainyjune <rainyjune@live.cn>
- * Known issue: swipe down and swipe up works not good enough on Android 4.1- devices.
+ * Known issue: 1. swipe down and swipe up works not good enough on Android 4.1- devices.
+ *              2. We do not support the swipeProgressMy event in Android 4.1- due to performance issue.
  */
 // Note:
 // 1. The touchend event is not trigged on some android stock browsers before 4.1 Jelly Bean.
@@ -51,7 +52,7 @@
     $(document).on("MSPointerUp", pointerUp);
     $(document).on("MSPointerCancel", pointerCancel);
   } else if (isAndroidBrowser() && getAndroidVersion() < 4.1) { // For Android 4.1-
-    alertMy("android 4.1-")
+    alertMy("android 4.1-");
     $(document).on("touchstart", start);
     $(document).on("touchmove", move);
     $(document).on("touchend", stop);
@@ -210,34 +211,42 @@
     return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? (x1 - x2 > 0 ? 'Left' : 'Right') : (y1 - y2 > 0 ? 'Up' : 'Down');
   }
   
+  /**** Android 4.1- ****/
+  
+  
   function prevent(e){
     e.preventDefault();
   }
   
-  function start(e) {
+  function start(event) {
     initAllVar();
-    goLeftRight = false;
-    goUpDown = false;
     document.addEventListener("touchmove", prevent, false);
-    /*
-    touchX = e.touches[0].pageX;
-    touchY = e.touches[0].pageY;
-    */
-    touchX = e.touches[0].clientX;
-    touchY = e.touches[0].clientY;
+
+    touchX = event.touches[0].clientX;
+    touchY = event.touches[0].clientY;
+    startPageX = event.touches[0].pageX;
+    startPageY = event.touches[0].pageY;
+    
+    var el = $(event.target) || $(document);
+    el.trigger("swipeStartMy");
   }
   
-  function move(e) {
-    /*
-    var nowX = e.touches[0].pageX,
-        nowY = e.touches[0].pageY;
-    */
-    var nowX = e.touches[0].clientX,
-        nowY = e.touches[0].clientY;
+  function move(event) {
+    var nowX = event.touches[0].clientX,
+        nowY = event.touches[0].clientY;
     movX = nowX - touchX;
     movY = nowY - touchY;
-    // TODO
-    var el = $(e.target) || $(document);
+    
+    nowPageX = event.touches[0].pageX,
+    nowPageY = event.touches[0].pageY;
+    movedPageX = nowPageX - startPageX;
+    movedPageY = nowPageY - startPageY;
+    
+    
+    var el = $(event.target) || $(document);
+    // TODO We do not support the swipeProgressMy event in Android 4.1- due to performance issue.
+    //el.trigger("swipeProgressMy", [movedPageX, movedPageY]);
+    
     if(!goLeftRight) {
       var absMovX = Math.abs(movX),
           absMoveY = Math.abs(movY);
@@ -245,6 +254,7 @@
         //alert("MOVEX: " + absMovX + " MOVEY: " + absMoveY);
         // Swipe Left or Swipe Right
         if (absMovX < horizontalOffset) {
+          el.trigger("swipeCancelMy");
           return ;
         }
         goLeftRight = true;
@@ -255,9 +265,10 @@
         //console.log("direction 1", swipeDirection(touchX, nowX, touchY, nowY), e);
       } else {
         // Swipe Up or Swipe Down
-        stop(e);
+        stop(event);
         if (!goUpDown) {
           if (absMoveY < verticalOffset) {
+            el.trigger("swipeCancelMy");
             return ;
           }
           goUpDown = true;
