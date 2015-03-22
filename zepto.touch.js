@@ -3,6 +3,13 @@
  * @author rainyjune <rainyjune@live.cn>
  * Known issue: swipe down and swipe up works not good enough on Android 4.1- devices.
  */
+// Note:
+// 1. The touchend event is not trigged on some android stock browsers before 4.1 Jelly Bean.
+//      See: https://code.google.com/p/android/issues/detail?id=19827
+// 2. The solution: http://stackoverflow.com/a/23145727
+// 
+// Resources
+// 1. Pointer and gesture events in Internet Explorer 10 (http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx)
 (function(factory){
   if (typeof define !== "undefined" && define.cmd) {
     define(function(require, exports, module){
@@ -22,15 +29,6 @@
   
   var horizontalOffset = 20,
       verticalOffset = 30;
-  
-  // Note:
-  // 1. The touchend event is not trigged on some android stock browsers before 4.1 Jelly Bean.
-  //      See: https://code.google.com/p/android/issues/detail?id=19827
-  // 2. The solution: http://stackoverflow.com/a/23145727
-  
-  
-  // Resources
-  // 1. Pointer and gesture events in Internet Explorer 10 (http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx)
   
   if (isAndroidBrowser() && getAndroidVersion() < 4.1) {
     //alert("4.1--");
