@@ -10,10 +10,11 @@
 // 
 // Resources
 // 1. Pointer and gesture events in Internet Explorer 10 (http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx)
+
+/* global define, Zepto */
 (function(factory){
   if (typeof define !== "undefined" && define.cmd) {
     define(function(require, exports, module){
-      
       var $ = require('zepto');
       factory($);
     });
