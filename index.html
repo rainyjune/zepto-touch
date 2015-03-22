@@ -4,6 +4,24 @@
     <meta charset="utf-8" />
     <title>Zepto Touch Plugin</title>
     <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+    <style type="text/css">
+      html, body {
+        /*
+        -ms-touch-action: none;
+        touch-action: none;
+        */
+      }
+      
+      #debug {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        width: 50px;
+        height: 50px;
+        background-color: gray;
+        color: white;
+      }
+    </style>
   </head>
   <body>
     <p>Text</p>
@@ -78,12 +96,24 @@
     <p>Text2</p>
     <p>Text2</p>
     <!--<script src="http://10.207.26.137:9090/target/target-script-min.js#anonymous"></script>-->
-    
+    <div id="debug">
+      0
+    </div>
     <script src="zepto.js"></script>
     <script src="zepto.touch.js"></script>
     <script>
       $(function(){
+        var number = 0;
         //alert("fff");
+        
+        function showNumber(newNumber) {
+          $("#debug").text(newNumber);
+        }
+        $(document).on("swipeStartMy", function(e){
+          number = 0;
+          showNumber(number);
+          //alert("swipeStart");
+        });
         $(document).on("swipeLeftMy", function(e){
           console.log("swipeLeft", e);
           alert("swipeLeft");
@@ -97,7 +127,7 @@
         $(document).on("swipeUpMy", function(e){
           //alert("sss");
            console.log("swipeUpMy", e);
-          alert("swipeUpMy");
+          alert("swipeUp");
         })
         $(document).on("swipeDownMy", function(e){
           //alert("sss");
@@ -105,6 +135,14 @@
           alert("swipeDown");
         })
         
+        $(document).on("swipeProgressMy", function(e) {
+          //alert("swipeProgressMy", e);
+          number += 1;
+          showNumber(number);
+        });
+        $(document).on("swipeCancelMy", function(e) {
+          //alert("swipeCancelMy");
+        });
       });
     </script>
   </body>
