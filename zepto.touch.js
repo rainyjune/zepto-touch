@@ -6,10 +6,13 @@
 // Note:
 // 1. The touchend event is not trigged on some android stock browsers before 4.1 Jelly Bean.
 //      See: https://code.google.com/p/android/issues/detail?id=19827
-// 2. The solution: http://stackoverflow.com/a/23145727
-// 
+//      The solution: http://stackoverflow.com/a/23145727
+// 2. [IE Bug]pointerup event is fired automatically when pinterdown is held on IE 11 (Windows Phone 8.1)
+//      See: https://connect.microsoft.com/IE/feedback/details/1076515/mouseup-pointerup-events-are-fired-automatically-when-mouse-or-pointerdown-are-held-windows-phone-8-1-ie11
+//      
 // Resources
 // 1. Pointer and gesture events in Internet Explorer 10 (http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx)
+// 2. Pointer events updates (https://msdn.microsoft.com/en-us/library/ie/dn304886%28v=vs.85%29.aspx)
 
 /* global define, Zepto */
 (function(factory){
@@ -24,110 +27,169 @@
   }
 }(function($){
   
-  var touchX, touchY, movX, movY, goLeftRight;
-  var goUpDown;
-  var nowX = null, nowY = null;
+  /* The coordinates relative to the viewport (clientX, cientY) */
+  var touchX = null, touchY = null, nowX = null, nowY = null, movX, movY;
+  /* The coordinates relative to the <html> element (pageX, pageY) */
+  var startPageX, startPageY, nowPageX, nowPageY, movedPageX, movedPageY;
+  var goLeftRight, goUpDown;
   
   var horizontalOffset = 20,
       verticalOffset = 30;
-  
-  if (isAndroidBrowser() && getAndroidVersion() < 4.1) {
-    //alert("4.1--");
+      
+  var isDebug = true;
+  alertMy("ua:" + navigator.userAgent);
+  if (window.PointerEvent) { //For Internet Explorer 11
+    alertMy("pinterEvent");
+    $(document).on("pointerdown", pointerDown);
+    $(document).on("pointermove", pointerMove);
+    $(document).on("pointerup", pointerUp);
+    $(document).on("pointercancel", pointerCancel);
+  } else if (window.navigator.msPointerEnabled) { // For Internet Explorer 10
+    alertMy("IE 10");
+    $(document).on("MSPointerDown", pointerDown);
+    $(document).on("MSPointerMove", pointerMove);
+    $(document).on("MSPointerUp", pointerUp);
+    $(document).on("MSPointerCancel", pointerCancel);
+  } else if (isAndroidBrowser() && getAndroidVersion() < 4.1) { // For Android 4.1-
+    alertMy("android 4.1-")
     $(document).on("touchstart", start);
     $(document).on("touchmove", move);
     $(document).on("touchend", stop);
     $(document).on("touchleave", stop);
     $(document).on("touchcancel", stop);
-  } else if (window.navigator.msPointerEnabled) {
-    //alert("windows");
-    $(document).on("MSPointerDown", pointerDown);
-    $(document).on("MSPointerMove", pointerMove);
-    $(document).on("MSPointerUp", pointerUp);
-    $(document).on("MSPointerCancel", pointerCancel);
   } else if (('ontouchstart' in document.documentElement) || ('ontouchstart' in window)){
+    alertMy("normal")
     $(document).on("touchstart", touchstartHandler);
     $(document).on("touchmove", touchmoveHandler);
     $(document).on("touchend", touchendHandler);
-    $(document).on("touchleave touchcancel", touchendHandler);
+    $(document).on("touchleave", touchendHandler);
+    $(document).on("touchcancel", touchendHandler);
   } else {
+    alertMy("mouse");
     $(document).on("mousedown", mousestartHandler);
     $(document).on("mousemove", mousemoveHandler);
     $(document).on("mouseup", touchendHandler);
+    $(document).on("mouseleave", touchendHandler);
+    
   }
   
   function mousestartHandler(event) {
     initAllVar();
+    
+    startPageX = event.pageX;
+    startPageY = event.pageY;
+    
     touchX = event.clientX;
     touchY = event.clientY;
+    
+    var el = $(event.target) || $(document);
+    el.trigger("swipeStartMy");
   }
   
   function mousemoveHandler(event) {
+    if (touchX === null || touchY === null) return ;
+    nowPageX = event.pageX,
+    nowPageY = event.pageY;
+    
     nowX = event.clientX,
     nowY = event.clientY;
+    
+    movedPageX = nowPageX - startPageX;
+    movedPageY = nowPageY - startPageY;
+    
+    var el = $(event.target) || $(document);
+    
+    el.trigger("swipeProgressMy", [movedPageX, movedPageY]);
   }
   
   function touchstartHandler(event) {
     initAllVar();
-    //debugger;
-    /*
-    touchX = event.touches[0].pageX;
-    touchY = event.touches[0].pageY;
-    */
+    
+    startPageX = event.touches[0].pageX;
+    startPageY = event.touches[0].pageY;
+    
     touchX = event.touches[0].clientX;
     touchY = event.touches[0].clientY;
+    
+    var el = $(event.target) || $(document);
+    el.trigger("swipeStartMy");
   }
   
   function touchmoveHandler(event) {
-    /*
-    nowX = event.touches[0].pageX,
-    nowY = event.touches[0].pageY;
-    */
+    nowPageX = event.touches[0].pageX,
+    nowPageY = event.touches[0].pageY;
+    
     nowX = event.touches[0].clientX,
     nowY = event.touches[0].clientY;
+    
+    movedPageX = nowPageX - startPageX;
+    movedPageY = nowPageY - startPageY;
+    
+    var el = $(event.target) || $(document);
+    
+    el.trigger("swipeProgressMy", [movedPageX, movedPageY]);
   }
   
   function touchendHandler(event) {
+    // Why null ?
     if (nowX === null || nowY === null) {
+      initAllVar();
       return ;
     }
     movX = Math.abs(touchX - nowX);
     movY = Math.abs(touchY - nowY);
+    
     var el = $(event.target) || $(document);
     if (movX > horizontalOffset || movY > verticalOffset) {
       el.trigger("swipeMy");
-      //alert("Movex:" + movX + " movey: " + movY);
+      alertMy("Movex:" + movX + " movey: " + movY);
       el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
-      //console.error("ie direction", swipeDirection(touchX, nowX, touchY, nowY));
+    } else {
+      el.trigger("swipeCancelMy");
     }
+    initAllVar();
   }
+  
+  /* Windows Devices */
   
   function pointerDown(event) {
     initAllVar();
-    console.info('pointer down', event.clientX, event.clientY);
+    
     touchX = event.clientX;
     touchY = event.clientY;
+    startPageX = event.pageX;
+    startPageY = event.pageY;
+    
+    var el = $(event.target) || $(document);
+    el.trigger("swipeStartMy");
   }
   function pointerMove(event) {
-    console.info('pointerMove', event.clientX, event.clientY);
     nowX = event.clientX;
     nowY = event.clientY;
+    nowPageX = event.pageX,
+    nowPageY = event.pageY;
+    movedPageX = nowPageX - startPageX;
+    movedPageY = nowPageY - startPageY;
+    
+    var el = $(event.target) || $(document);
+    el.trigger("swipeProgressMy", [movedPageX, movedPageY]);
   }
   function pointerUp(event) {
     if (nowX === null || nowY === null) {
       return ;
     }
-    console.info('pointerUp', event.clientX, event.clientY);
+    
     movX = Math.abs(touchX - nowX);
     movY = Math.abs(touchY - nowY);
     var el = $(event.target) || $(document);
     if (movX > horizontalOffset || movY > verticalOffset) {
       el.trigger("swipeMy");
       el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
-      //console.error("ie direction", swipeDirection(touchX, nowX, touchY, nowY));
+    } else {
+      el.trigger("swipeCancelMy");
     }
   }
   function pointerCancel(event) {
-    //console.info('pointerCancel', event.clientX, event.clientY);
     pointerUp(event);
   }
   
@@ -217,18 +279,30 @@
   }
   
   function initAllVar() {
-    //return ;
-    touchX = 0,
-    touchY = 0,
-    movX = 0,
-    movY = 0,
+    touchX = null,
+    touchY = null,
+    movX = null,
+    movY = null,
     goLeftRight = false;
     goUpDown = false;
     nowX = null,
     nowY = null;
+    
+    startPageX = null;
+    startPageY = null;
+    nowPageX = null;
+    nowPageY = null;
+    movedPageX = null;
+    movedPageY = null;
   }
   
-  ['swipeMy', 'swipeLeftMy', 'swipeRightMy', 'swipeUpMy', 'swipeDownMy'].forEach(function(eventName){
+  function alertMy(string) {
+    if (isDebug) {
+      alert(string);
+    }
+  }
+  
+  ['swipeMy', 'swipeLeftMy', 'swipeRightMy', 'swipeUpMy', 'swipeDownMy', 'swipeStartMy', 'swipeCancelMy', 'swipeProgressMy'].forEach(function(eventName){
     $.fn[eventName] = function(callback){
       return this.on(eventName, callback);
     };
