@@ -117,7 +117,10 @@
     movedPageX = nowPageX - startPageX;
     movedPageY = nowPageY - startPageY;
     
-    /* Magic code */
+    /* 
+     * Magic code
+     * Use it to make sure the swipeProgressMy event is triggered as expected on some devices, such as Android 2.3.5 and Android 4.4.2
+     */
     
     if (Math.abs(nowX - touchX) > 10 && Math.abs(nowY - touchY) < 25) {
       event.preventDefault();
