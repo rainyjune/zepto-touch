@@ -112,6 +112,12 @@
     <script src="zepto.js"></script>
     <script src="zepto.touch.js"></script>
     <script>
+      
+      var tdiv = document.getElementById("testDiv");
+      tdiv.addEventListener("touchstart", function(event){
+        event.preventDefault();
+      })
+      
       $(function(){
         var number = 0;
         //alert("fff");
