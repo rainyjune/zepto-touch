@@ -1,13 +1,11 @@
 /***
  * Zepto swipe module.
  * @author rainyjune <rainyjune@live.cn>
- * Known issue: 1. swipe down and swipe up works not good enough on Android 4.1- devices.
- *              2. We do not support the swipeProgressMy event in Android 4.1- due to performance issue.
  */
 // Note:
 // 1. The touchend event is not trigged on some android stock browsers before 4.1 Jelly Bean.
 //      See: https://code.google.com/p/android/issues/detail?id=19827
-//      The solution: http://stackoverflow.com/a/23145727
+//      The solution: https://code.google.com/p/android/issues/detail?id=19827#c38
 // 2. [IE Bug]pointerup event is fired automatically when pinterdown is held on IE 11 (Windows Phone 8.1)
 //      See: https://connect.microsoft.com/IE/feedback/details/1076515/mouseup-pointerup-events-are-fired-automatically-when-mouse-or-pointerdown-are-held-windows-phone-8-1-ie11
 //      
@@ -38,7 +36,7 @@
       verticalOffset = 30;
       
   var isDebug = true;
-  alertMy("ua:" + navigator.userAgent);
+  //alertMy("ua:" + navigator.userAgent);
   if (window.PointerEvent) { //For Internet Explorer 11
     alertMy("pinterEvent");
     $(document).on("pointerdown", pointerDown);
@@ -119,8 +117,11 @@
     movedPageX = nowPageX - startPageX;
     movedPageY = nowPageY - startPageY;
     
-    var el = $(event.target) || $(document);
+    if (Math.abs(nowX - touchX) > 10 && Math.abs(nowY - touchY) < 25) {
+      event.preventDefault();
+    }
     
+    var el = $(event.target) || $(document); 
     el.trigger("swipeProgressMy", [movedPageX, movedPageY]);
   }
   
