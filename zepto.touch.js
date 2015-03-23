@@ -117,9 +117,12 @@
     movedPageX = nowPageX - startPageX;
     movedPageY = nowPageY - startPageY;
     
+    /* Magic code */
+    
     if (Math.abs(nowX - touchX) > 10 && Math.abs(nowY - touchY) < 25) {
       event.preventDefault();
     }
+    
     
     var el = $(event.target) || $(document); 
     el.trigger("swipeProgressMy", [movedPageX, movedPageY]);
