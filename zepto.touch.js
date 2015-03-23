@@ -51,15 +51,8 @@
     $(document).on("MSPointerMove", pointerMove);
     $(document).on("MSPointerUp", pointerUp);
     $(document).on("MSPointerCancel", pointerCancel);
-  } else if (isAndroidBrowser() && getAndroidVersion() < 4.1) { // For Android 4.1-
-    alertMy("android 4.1-");
-    $(document).on("touchstart", start);
-    $(document).on("touchmove", move);
-    $(document).on("touchend", stop);
-    $(document).on("touchleave", stop);
-    $(document).on("touchcancel", stop);
   } else if (('ontouchstart' in document.documentElement) || ('ontouchstart' in window)){
-    alertMy("normal")
+    alertMy("normal2")
     $(document).on("touchstart", touchstartHandler);
     $(document).on("touchmove", touchmoveHandler);
     $(document).on("touchend", touchendHandler);
@@ -143,7 +136,7 @@
     var el = $(event.target) || $(document);
     if (movX > horizontalOffset || movY > verticalOffset) {
       el.trigger("swipeMy");
-      alertMy("Movex:" + movX + " movey: " + movY);
+      //alertMy("Movex:" + movX + " movey: " + movY);
       el.trigger("swipe" + (swipeDirection(touchX, nowX, touchY, nowY)) + "My");
     } else {
       el.trigger("swipeCancelMy");
