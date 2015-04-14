@@ -77,6 +77,10 @@
     touchX = event.clientX;
     touchY = event.clientY;
     
+    nowPageX = event.pageX;
+    nowPageY = event.pageY;
+    tapStart();
+    
     var el = $(event.target) || $(document);
     el.trigger("swipeStartMy");
   }
