@@ -139,7 +139,10 @@
   }
   
   function touchendHandler(event) {
-    tapEnd();
+    var isTap = tapEnd(event);
+    if (isTap) {
+      return false;
+    }
     // Why null ?
     if (nowX === null || nowY === null) {
       initAllVar();
@@ -188,7 +191,10 @@
     el.trigger("swipeProgressMy", [movedPageX, movedPageY]);
   }
   function pointerUp(event) {
-    tapEnd();
+    var isTap = tapEnd(event);
+    if (isTap) {
+      return false;
+    }
     if (nowX === null || nowY === null) {
       return ;
     }
@@ -249,13 +255,14 @@
     }, 200);
   }
   
-  function tapEnd() {
-    if (isTapLength &&
-        approximatelyEqual(startPageX, nowPageX) &&
-        approximatelyEqual(startPageY, nowPageY)) {
-          alert("tap");
+  function tapEnd(event) {
+    var el = $(event.target) || $(document);
+    if (isTapLength && approximatelyEqual(startPageX, nowPageX) && approximatelyEqual(startPageY, nowPageY)) {
+      event.preventDefault();
       el.trigger("tapMy");
+      return true;
     }
+    return false;
   }
   
   ['swipeMy', 'swipeLeftMy', 'swipeRightMy', 'swipeUpMy', 'swipeDownMy', 'swipeStartMy', 'swipeCancelMy', 'swipeProgressMy', 'tapMy'].forEach(function(eventName){
