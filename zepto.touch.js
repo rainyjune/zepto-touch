@@ -106,6 +106,10 @@
     touchX = event.touches[0].clientX;
     touchY = event.touches[0].clientY;
     
+    nowPageX = event.touches[0].pageX;
+    nowPageY = event.touches[0].pageY;
+    tapStart();
+    
     var el = $(event.target) || $(document);
     el.trigger("swipeStartMy");
   }
@@ -135,6 +139,7 @@
   }
   
   function touchendHandler(event) {
+    tapEnd();
     // Why null ?
     if (nowX === null || nowY === null) {
       initAllVar();
@@ -164,7 +169,7 @@
     startPageX = event.pageX;
     startPageY = event.pageY;
     
-    nowPageX = event.pageX,
+    nowPageX = event.pageX;
     nowPageY = event.pageY;
     tapStart();
     
