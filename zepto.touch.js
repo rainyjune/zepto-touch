@@ -32,6 +32,9 @@
   var startPageX, startPageY, nowPageX, nowPageY, movedPageX, movedPageY;
   var goLeftRight, goUpDown;
   
+  var isTapLength,
+      tapLengthTimeout;
+  
   var horizontalOffset = 20,
       verticalOffset = 30;
       
@@ -161,6 +164,10 @@
     startPageX = event.pageX;
     startPageY = event.pageY;
     
+    nowPageX = event.pageX,
+    nowPageY = event.pageY;
+    tapStart();
+    
     var el = $(event.target) || $(document);
     el.trigger("swipeStartMy");
   }
@@ -176,6 +183,7 @@
     el.trigger("swipeProgressMy", [movedPageX, movedPageY]);
   }
   function pointerUp(event) {
+    tapEnd();
     if (nowX === null || nowY === null) {
       return ;
     }
@@ -222,7 +230,30 @@
     }
   }
   
-  ['swipeMy', 'swipeLeftMy', 'swipeRightMy', 'swipeUpMy', 'swipeDownMy', 'swipeStartMy', 'swipeCancelMy', 'swipeProgressMy'].forEach(function(eventName){
+  function approximatelyEqual(a, b) {
+    return Math.abs(a - b) < 2;
+  }
+  
+  function tapStart() {
+    isTapLength = true;
+    if (tapLengthTimeout) {
+      clearTimeout(tapLengthTimeout);
+    }
+    tapLengthTimeout = setTimeout(function () {
+      isTapLength = false;
+    }, 200);
+  }
+  
+  function tapEnd() {
+    if (isTapLength &&
+        approximatelyEqual(startPageX, nowPageX) &&
+        approximatelyEqual(startPageY, nowPageY)) {
+          alert("tap");
+      el.trigger("tapMy");
+    }
+  }
+  
+  ['swipeMy', 'swipeLeftMy', 'swipeRightMy', 'swipeUpMy', 'swipeDownMy', 'swipeStartMy', 'swipeCancelMy', 'swipeProgressMy', 'tapMy'].forEach(function(eventName){
     $.fn[eventName] = function(callback){
       return this.on(eventName, callback);
     };
