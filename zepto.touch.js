@@ -12,6 +12,7 @@
 // Resources
 // 1. Pointer and gesture events in Internet Explorer 10 (http://msdn.microsoft.com/en-us/library/ie/hh673557(v=vs.85).aspx)
 // 2. Pointer events updates (https://msdn.microsoft.com/en-us/library/ie/dn304886%28v=vs.85%29.aspx)
+// 3. https://github.com/Tyriar/touchtap-event.js
 
 /* global define, Zepto */
 (function(factory){
