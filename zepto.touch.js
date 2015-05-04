@@ -31,7 +31,6 @@
   var touchX = null, touchY = null, nowX = null, nowY = null, movX, movY;
   /* The coordinates relative to the <html> element (pageX, pageY) */
   var startPageX, startPageY, nowPageX, nowPageY, movedPageX, movedPageY;
-  var goLeftRight, goUpDown;
   
   var isTapLength,
       tapLengthTimeout;
@@ -227,8 +226,6 @@
     touchY = null,
     movX = null,
     movY = null,
-    goLeftRight = false;
-    goUpDown = false;
     nowX = null,
     nowY = null;
     
