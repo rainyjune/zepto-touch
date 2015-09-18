@@ -1,6 +1,8 @@
 # zepto-touch
 Zepto swipe plugin
 
+## Note: Deprecated, please use [mobiletouch](https://github.com/rainyjune/mobiletouch) instead.
+
 Tested on 
  * Android 2.3.5 (ZTE Q101T)
  * Android 4.0.3 (Coolpad 8076D)
